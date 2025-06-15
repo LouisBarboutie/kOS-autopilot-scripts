@@ -17,23 +17,27 @@ set command_fore to 0.
 set command_star to 0.
 set command_top to 0.
 
-lock target_vec to  target:portfacing:forevector * 25.
-lock steering to -target_vec.
+set history to list().
+set target_distance to 25.
+
+lock target_vec to  target:portfacing:forevector * target_distance.
+lock steering to  lookDirUp(-target:portfacing:forevector, target:portfacing:topvector).
 lock relative_velocity to target:ship:velocity:orbit - ship:velocity:orbit.
-lock distance to target:position + target_vec.
+lock distance to target:position + target_vec - ship:controlpart:position.
 
 set weight to 0.3.
 lock control_variable to  (1 - weight) * distance + weight * relative_velocity.
 
 set arrow to vecDraw(target:position, target_vec, RGB(1,1,1), "", 1.0, true).
-set target_arrow to vecDraw(ship:position, control_variable, RGB(1,1,1), "", 1.0, true).
-set fore_arrow to vecDraw(ship:position, ship:controlpart:portfacing:forevector, RGB(1,0,0), "", 1.0, true).
-set star_arrow to vecDraw(ship:position, ship:controlpart:portfacing:starvector, RGB(0,1,0), "", 1.0, true).
-set top_arrow to vecDraw(ship:position, ship:controlpart:portfacing:topvector, RGB(0,0,1), "", 1.0, true).
+set target_arrow to vecDraw(ship:controlpart:position, control_variable, RGB(1,1,1), "", 1.0, true).
+set fore_arrow to vecDraw(ship:controlpart:position, ship:controlpart:portfacing:forevector, RGB(1,0,0), "", 1.0, true).
+set star_arrow to vecDraw(ship:controlpart:position, ship:controlpart:portfacing:starvector, RGB(0,1,0), "", 1.0, true).
+set top_arrow to vecDraw(ship:controlpart:position, ship:controlpart:portfacing:topvector, RGB(0,0,1), "", 1.0, true).
+set target_fore_arrow to vecDraw(target:position, target:portfacing:forevector, RGB(1,0,0), "", 1.0, true).
+set target_star_arrow to vecDraw(target:position, target:portfacing:starvector, RGB(0,1,0), "", 1.0, true).
+set target_top_arrow to vecDraw(target:position, target:portfacing:topvector, RGB(0,0,1), "", 1.0, true).
 
-set history to list().
-
-until false {
+until target = "" {
 
     clearScreen.
 
@@ -56,6 +60,14 @@ until false {
     set fore_arrow:vec to ship:controlpart:portfacing:forevector.
     set star_arrow:vec to ship:controlpart:portfacing:starvector.
     set top_arrow:vec to ship:controlpart:portfacing:topvector.    
+    
+    set target_fore_arrow:start to target:position.
+    set target_star_arrow:start to target:position.
+    set target_top_arrow:start to target:position.
+    
+    set target_fore_arrow:vec to target:portfacing:forevector.
+    set target_star_arrow:vec to target:portfacing:starvector.
+    set target_top_arrow:vec to target:portfacing:topvector.    
 
     // ========================= //
     // === UPDATE CONTROLLER === //
@@ -103,8 +115,8 @@ until false {
     // === STABILITY CRITERION === //
     // =========================== //
 
-    history:add(round(abs_val, 1)).
-    if history:length > 100 {
+    history:add(round(abs_val, 2)).
+    if history:length > 25 {
         history:remove(0).
         set sum to 0.
         for item in history {
@@ -113,7 +125,15 @@ until false {
 
         // aim for the docking port
         if sum = 0 {
-            lock target_vec to target:portfacing:forevector.
+            set target_arrow:show to false.
+            runOncePath("berth.ks").
+           
+            // if target_distance - 5 > 0 {
+            //     set target_distance to target_distance - 5.
+            // }
+            // else {
+            //     set target_distance to 0.
+            // }
         }
     }
 
