@@ -7,3 +7,4 @@ This repository contains various autopilot scripts to be used in Kerbal Space Pr
     berth.ks        # Waypoint-based navigation and cascaded PID-based control  
     MNVR.ks         # Maneuver execution
     circularize.ks  # Orbit circularization
+    FDIR.ks         # Engine thrust Failure Detection, Isolation and Recovery
